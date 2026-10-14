@@ -5,6 +5,9 @@
   "exports": {
     "./*": "./src/*.tsx"
   },
+  "imports": {
+    "#*": "./src/*"
+  },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "generate:component": "turbo gen react-component",
