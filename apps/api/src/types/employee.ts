@@ -38,3 +38,8 @@ export type EmployeeSalaryHistory = {
   employeeId: string;
   salaryHistory: SalaryHistoryItem[];
 };
+
+export type EmployeeCurrentSalary = {
+  employeeId: string;
+  currentSalary: SalaryHistoryItem | null;
+};

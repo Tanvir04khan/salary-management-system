@@ -1,14 +1,18 @@
 import type { AddressInfo } from "node:net";
 import express from "express";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { EmployeeDetails, EmployeeList } from "../types/employee";
+import type { EmployeeDetails, EmployeeList, SalaryHistoryItem } from "../types/employee";
 import {
     createEmployee as createEmployeeRecord,
     getEmployeeById,
     listEmployees,
     updateEmployee as updateEmployeeRecord,
 } from "../services/employee";
-import { getEmployeeSalaryHistory } from "../services/salary-record";
+import {
+    getEmployeeCurrentSalary,
+    getEmployeeSalaryHistory,
+    updateEmployeeSalary,
+} from "../services/salary-record";
 import employeeRoutes from "./employee.routes";
 
 vi.mock("../services/employee", () => ({
@@ -19,7 +23,9 @@ vi.mock("../services/employee", () => ({
 }));
 
 vi.mock("../services/salary-record", () => ({
+    getEmployeeCurrentSalary: vi.fn(),
     getEmployeeSalaryHistory: vi.fn(),
+    updateEmployeeSalary: vi.fn(),
 }));
 
 const listEmployeesMock = vi.mocked(listEmployees);
@@ -27,6 +33,8 @@ const getEmployeeByIdMock = vi.mocked(getEmployeeById);
 const createEmployeeMock = vi.mocked(createEmployeeRecord);
 const updateEmployeeMock = vi.mocked(updateEmployeeRecord);
 const getSalaryHistoryMock = vi.mocked(getEmployeeSalaryHistory);
+const getCurrentSalaryMock = vi.mocked(getEmployeeCurrentSalary);
+const updateSalaryMock = vi.mocked(updateEmployeeSalary);
 const servers: ReturnType<express.Express["listen"]>[] = [];
 const employee: EmployeeDetails = {
     employeeId: "00000000-0000-4000-8000-000000000001",
@@ -210,6 +218,80 @@ describe("employee routes", () => {
             statusCode: 200,
             data: salaryHistory,
             message: "Salary history retrieved successfully",
+        });
+    });
+
+    it("routes PATCH /:id/salary to salary updates", async () => {
+        const salaryRecord: SalaryHistoryItem = {
+            salaryRecordId: "00000000-0001-4000-8000-000000000001",
+            amount: "800000.00",
+            currency: "INR",
+            effectiveFrom: "2026-05-15",
+            effectiveTo: null,
+            changeReason: null,
+            createdAt: new Date("2026-05-15T00:00:00.000Z"),
+        };
+        updateSalaryMock.mockResolvedValue(salaryRecord);
+        const baseUrl = await startTestServer();
+
+        const response = await fetch(
+            `${baseUrl}/employees/${employee.employeeId}/salary`,
+            {
+                method: "PATCH",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ amount: "800000.00", currency: "INR" }),
+            },
+        );
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(updateSalaryMock).toHaveBeenCalledWith(employee.employeeId, {
+            amount: "800000.00",
+            currency: "INR",
+        });
+        expect(body).toEqual({
+            success: true,
+            statusCode: 200,
+            data: {
+                ...salaryRecord,
+                createdAt: salaryRecord.createdAt.toISOString(),
+            },
+            message: "Salary updated successfully",
+        });
+    });
+
+    it("routes GET /:id/salary to the current salary controller", async () => {
+        const salary = {
+            employeeId: employee.employeeId,
+            currentSalary: {
+                salaryRecordId: "00000000-0001-4000-8000-000000000001",
+                amount: "800000.00",
+                currency: "INR",
+                effectiveFrom: "2026-05-15",
+                effectiveTo: null,
+                changeReason: null,
+                createdAt: new Date("2026-05-15T00:00:00.000Z"),
+            },
+        };
+        getCurrentSalaryMock.mockResolvedValue(salary);
+        const baseUrl = await startTestServer();
+
+        const response = await fetch(`${baseUrl}/employees/${employee.employeeId}/salary`);
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(getCurrentSalaryMock).toHaveBeenCalledWith(employee.employeeId);
+        expect(body).toEqual({
+            success: true,
+            statusCode: 200,
+            data: {
+                ...salary,
+                currentSalary: {
+                    ...salary.currentSalary,
+                    createdAt: salary.currentSalary.createdAt.toISOString(),
+                },
+            },
+            message: "Current salary retrieved successfully",
         });
     });
 });

@@ -81,6 +81,28 @@ export const employeeUpdateSchema = z.object(employeeProfileFields)
         { message: "At least one employee field must be provided" },
     );
 
+const positiveSalaryAmountSchema = z.string()
+    .trim()
+    .regex(/^\d{1,13}(?:\.\d{1,2})?$/)
+    .refine((value) => {
+        const [whole, fraction = ""] = value.split(".");
+        return BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0")) > 0n;
+    }, { message: "Salary amount must be greater than zero" })
+    .transform((value) => {
+        const [whole, fraction = ""] = value.split(".");
+        return `${whole}.${fraction.padEnd(2, "0")}`;
+    });
+
+export const salaryUpdateSchema = z.object({
+    amount: positiveSalaryAmountSchema,
+    currency: z.string()
+        .trim()
+        .regex(/^[A-Za-z]{3}$/)
+        .transform((value) => value.toUpperCase()),
+    effectiveFrom: z.iso.date().optional(),
+    changeReason: z.string().trim().min(1).max(500).optional(),
+});
+
 export type EmployeeListQuery = z.infer<
     typeof employeeListQuerySchema
 >;
@@ -88,3 +110,4 @@ export type EmployeeListQuery = z.infer<
 export type EmployeeIdParams = z.infer<typeof employeeIdParamSchema>;
 export type EmployeeCreateInput = z.infer<typeof employeeCreateSchema>;
 export type EmployeeUpdateInput = z.infer<typeof employeeUpdateSchema>;
+export type SalaryUpdateInput = z.infer<typeof salaryUpdateSchema>;

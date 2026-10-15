@@ -3,6 +3,7 @@ import {
     employeeCreateSchema,
     employeeListQuerySchema,
     employeeUpdateSchema,
+    salaryUpdateSchema,
 } from "./employee";
 
 describe("employeeListQuerySchema", () => {
@@ -115,5 +116,38 @@ describe("employeeUpdateSchema", () => {
         expect(employeeUpdateSchema.safeParse({ firstName: " " }).success).toBe(false);
         expect(employeeUpdateSchema.safeParse({ employeeCode: "ACME-99999" }).success)
             .toBe(false);
+    });
+});
+
+describe("salaryUpdateSchema", () => {
+    it("preserves decimal precision, normalizes currency, and accepts historical effective dates", () => {
+        const result = salaryUpdateSchema.parse({
+            amount: "1250000.5",
+            currency: "inr",
+            effectiveFrom: "2025-04-01",
+            changeReason: " Annual review ",
+        });
+
+        expect(result).toEqual({
+            amount: "1250000.50",
+            currency: "INR",
+            effectiveFrom: "2025-04-01",
+            changeReason: "Annual review",
+        });
+    });
+
+    it("rejects numeric amounts, zero, excessive precision, and invalid date formats", () => {
+        const base = {
+            currency: "INR",
+        };
+
+        expect(salaryUpdateSchema.safeParse({ ...base, amount: 100 }).success).toBe(false);
+        expect(salaryUpdateSchema.safeParse({ ...base, amount: "0.00" }).success).toBe(false);
+        expect(salaryUpdateSchema.safeParse({ ...base, amount: "123.456" }).success).toBe(false);
+        expect(salaryUpdateSchema.safeParse({
+            ...base,
+            amount: "100.00",
+            effectiveFrom: "2025-02-30",
+        }).success).toBe(false);
     });
 });
