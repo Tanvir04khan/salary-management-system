@@ -11,7 +11,8 @@
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit migrate",
         "db:studio": "drizzle-kit studio",
-        "db:seed": "tsx src/scripts/seed.ts"
+        "db:seed": "tsx src/scripts/seed.ts",
+        "test": "vitest run"
     },
     "devDependencies": {
         "@types/cors": "^2.8.19",
@@ -20,11 +21,15 @@
         "@types/pg": "^8.23.1",
         "drizzle-kit": "^0.31.11",
         "tsx": "^4.23.15",
-        "typescript": "^7.0.2"
+        "typescript": "^7.0.2",
+        "vitest": "^5.0.4"
     },
     "dependencies": {
+        "cors": "^2.8.6",
         "dotenv": "^18.0.8",
         "drizzle-orm": "^0.45.4",
-        "pg": "^8.23.1"
+        "express": "^5.3.0",
+        "pg": "^8.23.1",
+        "zod": "^4.6.7"
     }
 }
