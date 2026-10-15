@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import employeeRoutes from "./routes/employee.routes";
+import analyticsRoutes from "./routes/analytics.routes";
 import { failureResponse, successResponse } from "./types/api-response";
 
 const app = express();
@@ -15,6 +16,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/employees", employeeRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error("Unhandled API error:", error);
