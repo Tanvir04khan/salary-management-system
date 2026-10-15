@@ -20,13 +20,8 @@ export async function authorizeHrManager(
     }
 
     const user = await clerkClient.users.getUser(auth.userId);
-    console.warn("HR authorization denied: required role missing", {
-      method: req.method,
-      path: req.originalUrl,
-      user: user,
-    });
     const role = user.publicMetadata.role;
-    if (typeof role !== "string" || role.toUpperCase() !== "HR_MANAGER") {
+    if (typeof role !== "string" || role.toLowerCase() !== "hr_manager") {
       console.warn("HR authorization denied: required role missing", {
         method: req.method,
         path: req.originalUrl,

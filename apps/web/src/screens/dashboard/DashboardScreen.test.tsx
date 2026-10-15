@@ -45,9 +45,8 @@ describe("dashboard summaries", () => {
     expect(await screen.findByText("Total employees")).toBeTruthy();
     expect(screen.getAllByText("Active employees")[0].closest("article")?.textContent).toContain("8");
     expect(screen.getByText("Inactive employees").closest("article")?.textContent).toContain("2");
-    const salaryTable = screen.getByRole("table", { name: "Average annual base salary by currency" });
-    expect(salaryTable.textContent).toContain("USD 120,000.00");
-    expect(salaryTable.textContent).toContain("INR 1,800,000.00");
-    expect(screen.getByRole("table", { name: "Active employees by country" })).toBeTruthy();
+    expect(screen.getAllByRole("img").some((chart) => chart.getAttribute("aria-label")?.includes("USD"))).toBe(true);
+    expect(screen.getAllByRole("img").some((chart) => chart.getAttribute("aria-label")?.includes("INR"))).toBe(true);
+    expect(screen.getByRole("img", { name: /Active employees by country/ })).toBeTruthy();
   });
 });

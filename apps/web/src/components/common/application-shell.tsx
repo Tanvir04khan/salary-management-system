@@ -1,10 +1,12 @@
 import {
   ChartNoAxesColumnIncreasing,
   LayoutDashboard,
+  LogOut,
   Menu,
   UsersRound,
   X,
 } from "lucide-react";
+import { useClerk } from "@clerk/react";
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 
@@ -62,8 +64,40 @@ function SidebarBrand() {
   );
 }
 
+function SignOutAction({
+  onSignOut,
+  isSigningOut,
+  error,
+}: {
+  onSignOut: () => void;
+  isSigningOut: boolean;
+  error: string;
+}) {
+  return (
+    <>
+      <button
+        className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-300 transition-colors hover:bg-white/8 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-wait disabled:opacity-60"
+        disabled={isSigningOut}
+        onClick={onSignOut}
+        type="button"
+      >
+        <LogOut aria-hidden="true" className="size-[18px]" />
+        {isSigningOut ? "Signing out…" : "Sign out"}
+      </button>
+      {error && (
+        <p aria-live="assertive" className="px-3 pt-2 text-xs text-red-300">
+          {error}
+        </p>
+      )}
+    </>
+  );
+}
+
 export function ApplicationShell() {
+  const { signOut } = useClerk();
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const mobilePanelRef = useRef<HTMLElement>(null);
   const mobileCloseRef = useRef<HTMLButtonElement>(null);
@@ -110,14 +144,30 @@ export function ApplicationShell() {
 
   const pageTitle = currentPageTitle(location.pathname);
 
+  async function handleSignOut() {
+    setSignOutError("");
+    setIsSigningOut(true);
+    try {
+      await signOut({ redirectUrl: "/sign-in" });
+    } catch {
+      setSignOutError("We could not sign you out. Please try again.");
+      setIsSigningOut(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
-      <aside className="hidden min-h-screen flex-col bg-slate-950 px-5 py-7 lg:flex">
+      <aside className="hidden min-h-screen flex-col bg-slate-950 px-5 py-7 lg:sticky lg:top-0 lg:h-screen lg:min-h-0 lg:self-start lg:flex">
         <SidebarBrand />
         <SidebarNavigation />
-        <p className="mt-auto px-2 pt-8 text-xs text-slate-500">
-          Salary management
-        </p>
+        <div className="mt-auto pt-8">
+          <SignOutAction
+            error={signOutError}
+            isSigningOut={isSigningOut}
+            onSignOut={() => void handleSignOut()}
+          />
+          <p className="px-2 pt-5 text-xs text-slate-500">Salary management</p>
+        </div>
       </aside>
 
       {mobileNavigationOpen && (
@@ -150,9 +200,14 @@ export function ApplicationShell() {
             <SidebarNavigation
               onNavigate={() => setMobileNavigationOpen(false)}
             />
-            <p className="mt-auto px-2 pt-8 text-xs text-slate-500">
-              Salary management
-            </p>
+            <div className="mt-auto pt-8">
+              <SignOutAction
+                error={signOutError}
+                isSigningOut={isSigningOut}
+                onSignOut={() => void handleSignOut()}
+              />
+              <p className="px-2 pt-5 text-xs text-slate-500">Salary management</p>
+            </div>
           </aside>
         </div>
       )}

@@ -21,15 +21,25 @@ if (missingClerkConfiguration.length > 0) {
 }
 
 app.use(cors({ origin: "http://localhost:5173" }));
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/health", (_req, res) => {
   const response = successResponse({ status: "ok" }, "API is running");
   res.status(response.statusCode).json(response);
 });
 
-app.use("/api/employees", employeeRoutes);
-app.use("/api/analytics", analyticsRoutes);
+app.use(
+  "/api/employees",
+  clerkMiddleware(),
+  authorizeHrManager,
+  employeeRoutes,
+);
+app.use(
+  "/api/analytics",
+  clerkMiddleware(),
+  authorizeHrManager,
+  analyticsRoutes,
+);
 
 app.use(
   (
