@@ -10,7 +10,7 @@ import {
 } from "../../hooks/use-analytics";
 import { ApiError } from "../../utils/api-client";
 import { GroupHeadcountTable, GroupSalaryTable, type AnalyticsGroup } from "./components/analytics-group-tables";
-import { EmployeeCountChart, SalaryByCurrencyChart } from "./components/analytics-charts";
+import { EmployeeCountChart, EmploymentStatusPieChart, SalaryByCurrencyChart } from "./components/analytics-charts";
 
 function safeMessage(error: Error): string {
   return error instanceof ApiError ? error.message : "Check your connection and try again.";
@@ -53,7 +53,7 @@ export default function AnalyticsScreen() {
             onRetry={() => void summaryQuery.refetch()}
           />
         ) : summaryQuery.data.employeeCountsByStatus.length ? (
-          <EmployeeCountChart title="Employees by employment status" data={summaryQuery.data.employeeCountsByStatus.map((row) => ({ label: row.status === "ACTIVE" ? "Active" : "Inactive", count: row.employeeCount }))} />
+          <EmploymentStatusPieChart title="Employees by employment status" data={summaryQuery.data.employeeCountsByStatus.map((row) => ({ label: row.status === "ACTIVE" ? "Active" : "Inactive", count: row.employeeCount }))} />
         ) : (
           <EmptyState title="No workforce data" description="Status totals will appear when employee records are available." />
         )}
