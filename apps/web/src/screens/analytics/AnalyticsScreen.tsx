@@ -1,5 +1,3 @@
-import { DataTable } from "../../components/data-table/data-table";
-import { CurrencyAmount } from "../../components/common/currency-amount";
 import { EmptyState } from "../../components/common/empty-state";
 import { ErrorState } from "../../components/common/error-state";
 import { LoadingSkeleton } from "../../components/common/loading-skeleton";
@@ -12,6 +10,7 @@ import {
 } from "../../hooks/use-analytics";
 import { ApiError } from "../../utils/api-client";
 import { GroupHeadcountTable, GroupSalaryTable, type AnalyticsGroup } from "./components/analytics-group-tables";
+import { EmployeeCountChart, SalaryByCurrencyChart } from "./components/analytics-charts";
 
 function safeMessage(error: Error): string {
   return error instanceof ApiError ? error.message : "Check your connection and try again.";
@@ -54,15 +53,7 @@ export default function AnalyticsScreen() {
             onRetry={() => void summaryQuery.refetch()}
           />
         ) : summaryQuery.data.employeeCountsByStatus.length ? (
-          <DataTable
-            caption="Employee count by employment status"
-            columns={[
-              { id: "status", header: "Employment status", cell: (row) => row.status === "ACTIVE" ? "Active" : "Inactive" },
-              { id: "count", header: "Employees", cell: (row) => row.employeeCount },
-            ]}
-            getRowId={(row) => row.status}
-            rows={summaryQuery.data.employeeCountsByStatus}
-          />
+          <EmployeeCountChart title="Employees by employment status" data={summaryQuery.data.employeeCountsByStatus.map((row) => ({ label: row.status === "ACTIVE" ? "Active" : "Inactive", count: row.employeeCount }))} />
         ) : (
           <EmptyState title="No workforce data" description="Status totals will appear when employee records are available." />
         )}
@@ -82,20 +73,7 @@ export default function AnalyticsScreen() {
             onRetry={() => void summaryQuery.refetch()}
           />
         ) : summaryQuery.data.currentSalaryByCurrency.length ? (
-          <DataTable
-            caption="Average annual base salary by currency"
-            columns={[
-              { id: "currency", header: "Currency", cell: (row) => row.currency },
-              { id: "count", header: "Employees included", cell: (row) => row.employeeCount },
-              {
-                id: "average",
-                header: "Average annual base salary",
-                cell: (row) => <CurrencyAmount amount={row.averageAnnualSalary} currency={row.currency} />,
-              },
-            ]}
-            getRowId={(row) => row.currency}
-            rows={summaryQuery.data.currentSalaryByCurrency}
-          />
+          <SalaryByCurrencyChart title="Average annual salary" rows={summaryQuery.data.currentSalaryByCurrency.map((row) => ({ ...row, label: row.currency }))} />
         ) : (
           <EmptyState
             title="No current salary data"
@@ -168,6 +146,11 @@ function AnalyticsDimensionSection({
         <EmptyState title={`No ${dimension.toLowerCase()} data`} description={`${dimension} analytics will appear when active employees are available.`} />
       ) : (
         <div className="space-y-6">
+          <EmployeeCountChart title={`Active employees by ${dimension.toLowerCase()}`} data={groups.map((group) => ({ label: group.label, count: group.activeEmployeeCount }))} />
+          <SalaryByCurrencyChart
+            title={`Average annual salary by ${dimension.toLowerCase()}`}
+            rows={groups.flatMap((group) => group.currentSalaryByCurrency.map((salary) => ({ ...salary, label: group.label })))}
+          />
           <GroupHeadcountTable dimension={dimension} groups={groups} />
           <GroupSalaryTable dimension={dimension} groups={groups} />
         </div>

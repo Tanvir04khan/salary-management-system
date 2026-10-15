@@ -18,7 +18,9 @@ function currentPageTitle(pathname: string): string {
   if (pathname.endsWith("/edit")) return "Edit employee";
   if (pathname.endsWith("/salary")) return "Update salary";
   if (pathname.startsWith("/employees/")) return "Employee details";
-  return navigationItems.find((item) => item.to === pathname)?.label ?? "Workspace";
+  return (
+    navigationItems.find((item) => item.to === pathname)?.label ?? "Workspace"
+  );
 }
 
 function SidebarNavigation({ onNavigate }: { onNavigate?: () => void }) {
@@ -81,9 +83,10 @@ export function ApplicationShell() {
       }
 
       if (event.key !== "Tab") return;
-      const focusableElements = mobilePanelRef.current?.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      );
+      const focusableElements =
+        mobilePanelRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
       if (!focusableElements?.length) return;
 
       const firstElement = focusableElements[0];
@@ -112,7 +115,9 @@ export function ApplicationShell() {
       <aside className="hidden min-h-screen flex-col bg-slate-950 px-5 py-7 lg:flex">
         <SidebarBrand />
         <SidebarNavigation />
-        <p className="mt-auto px-2 pt-8 text-xs text-slate-500">Salary management</p>
+        <p className="mt-auto px-2 pt-8 text-xs text-slate-500">
+          Salary management
+        </p>
       </aside>
 
       {mobileNavigationOpen && (
@@ -142,8 +147,12 @@ export function ApplicationShell() {
                 <X aria-hidden="true" className="size-5" />
               </button>
             </div>
-            <SidebarNavigation onNavigate={() => setMobileNavigationOpen(false)} />
-            <p className="mt-auto px-2 pt-8 text-xs text-slate-500">Salary management</p>
+            <SidebarNavigation
+              onNavigate={() => setMobileNavigationOpen(false)}
+            />
+            <p className="mt-auto px-2 pt-8 text-xs text-slate-500">
+              Salary management
+            </p>
           </aside>
         </div>
       )}
@@ -152,20 +161,34 @@ export function ApplicationShell() {
         <header className="sticky top-0 z-20 flex h-[68px] items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-7">
           <button
             aria-expanded={mobileNavigationOpen}
-            aria-label={mobileNavigationOpen ? "Close navigation" : "Open navigation"}
+            aria-label={
+              mobileNavigationOpen ? "Close navigation" : "Open navigation"
+            }
             className="grid size-10 place-items-center rounded-lg text-slate-600 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 lg:hidden"
             onClick={() => setMobileNavigationOpen((open) => !open)}
             ref={mobileToggleRef}
             type="button"
           >
-            {mobileNavigationOpen
-              ? <X aria-hidden="true" className="size-5" />
-              : <Menu aria-hidden="true" className="size-5" />}
+            {mobileNavigationOpen ? (
+              <X aria-hidden="true" className="size-5" />
+            ) : (
+              <Menu aria-hidden="true" className="size-5" />
+            )}
           </button>
           <div className="flex min-w-0 items-center gap-2 text-sm">
             <span className="hidden text-slate-400 sm:inline">ACME</span>
-            <span aria-hidden="true" className="hidden text-slate-300 sm:inline">/</span>
-            <span aria-current="page" className="truncate font-medium text-slate-800">{pageTitle}</span>
+            <span
+              aria-hidden="true"
+              className="hidden text-slate-300 sm:inline"
+            >
+              /
+            </span>
+            <span
+              aria-current="page"
+              className="truncate font-medium text-slate-800"
+            >
+              {pageTitle}
+            </span>
           </div>
         </header>
         <main className="mx-auto w-full max-w-[1440px] px-4 py-7 sm:px-7 sm:py-9">

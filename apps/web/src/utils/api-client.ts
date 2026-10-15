@@ -24,6 +24,12 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "/api").replace(
   "",
 );
 
+let getSessionToken: (() => Promise<string | null>) | undefined;
+
+export function setSessionTokenProvider(provider: (() => Promise<string | null>) | undefined) {
+  getSessionToken = provider;
+}
+
 export function buildApiUrl(path: string, params?: ApiQueryParams): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const query = new URLSearchParams();
@@ -51,11 +57,22 @@ export async function requestApi<T>(
   const { method = "GET", params, body, signal } = options;
   let response: Response;
 
+  let token: string | null | undefined;
+  try {
+    token = await getSessionToken?.();
+  } catch {
+    window.dispatchEvent(new CustomEvent("api:authorization-failed", { detail: { status: 401 } }));
+    throw new ApiError("Your authentication session could not be verified.", 401);
+  }
+  const headers = new Headers();
+  if (body !== undefined) headers.set("Content-Type", "application/json");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
   try {
     response = await fetch(buildApiUrl(path, params), {
       method,
       signal,
-      headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+      headers: headers.has("Content-Type") || headers.has("Authorization") ? headers : undefined,
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch (error) {
@@ -89,6 +106,9 @@ export async function requestApi<T>(
   }
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      window.dispatchEvent(new CustomEvent("api:authorization-failed", { detail: { status: response.status } }));
+    }
     const message = isApiFailure(payload) ? payload.message : "The request could not be completed.";
     throw new ApiError(message, response.status);
   }

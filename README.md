@@ -157,3 +157,7 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
 - [Configuration Options](https://turborepo.dev/docs/reference/configuration)
 - [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+
+# Authentication and analytics setup
+
+See [the Clerk and analytics setup guide](docs/authentication-and-analytics.md) for environment configuration, email OTP, HR Manager role provisioning, and the one-hour maximum session lifetime setting.

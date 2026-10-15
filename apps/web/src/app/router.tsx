@@ -8,6 +8,7 @@ import { ApplicationShell } from "../components/common/application-shell";
 import { RouteLoading } from "../components/common/route-loading";
 import { NotFoundScreen } from "../screens/not-found/NotFoundScreen";
 import { RouteErrorScreen } from "../screens/not-found/RouteErrorScreen";
+import { HrManagerRoute } from "../hooks/custom/use-hr-manager-route";
 
 const DashboardScreen = lazy(() => import("../screens/dashboard/DashboardScreen"));
 const EmployeesScreen = lazy(() => import("../screens/employees/EmployeesScreen"));
@@ -16,17 +17,24 @@ const EmployeeDetailsScreen = lazy(() => import("../screens/employee-details/Emp
 const EditEmployeeScreen = lazy(() => import("../screens/employee-details/EditEmployeeScreen"));
 const EmployeeSalaryScreen = lazy(() => import("../screens/employee-details/EmployeeSalaryScreen"));
 const AnalyticsScreen = lazy(() => import("../screens/analytics/AnalyticsScreen"));
+const SignInScreen = lazy(() => import("../screens/sign-in/SignInScreen"));
+const UnauthorizedScreen = lazy(() => import("../screens/unauthorized/UnauthorizedScreen"));
 
 function withLoadingFallback(element: ReactNode) {
   return <Suspense fallback={<RouteLoading />}>{element}</Suspense>;
 }
 
 const router = createBrowserRouter([
+  { path: "/sign-in", element: withLoadingFallback(<SignInScreen />) },
+  { path: "/unauthorized", element: withLoadingFallback(<UnauthorizedScreen />) },
   {
     path: "/",
-    element: <ApplicationShell />,
+    element: <HrManagerRoute />,
     errorElement: <RouteErrorScreen />,
     children: [
+      {
+        element: <ApplicationShell />,
+        children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       {
         path: "dashboard",
@@ -57,6 +65,8 @@ const router = createBrowserRouter([
         element: withLoadingFallback(<AnalyticsScreen />),
       },
       { path: "*", element: <NotFoundScreen /> },
+        ],
+      },
     ],
   },
 ]);
