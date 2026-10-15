@@ -5,13 +5,20 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("API client", () => {
   it("serializes query values and omits nullish parameters", () => {
-    expect(buildApiUrl("/employees", {
+    const url = new URL(buildApiUrl("/employees", {
       page: 2,
       search: "A & B",
       status: "ACTIVE",
       country: undefined,
       department: null,
-    })).toBe("/api/employees?page=2&search=A+%26+B&status=ACTIVE");
+    }), "http://localhost");
+
+    expect(url.pathname).toBe("/api/employees");
+    expect([...url.searchParams.entries()]).toEqual([
+      ["page", "2"],
+      ["search", "A & B"],
+      ["status", "ACTIVE"],
+    ]);
   });
 
   it("unwraps a successful API envelope", async () => {

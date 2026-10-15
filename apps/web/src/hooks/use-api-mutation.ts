@@ -16,7 +16,7 @@ type ApiMutationOptions<TData, TVariables> = Omit<
   method: Exclude<HttpMethod, "GET">;
   path: string;
   body?: (variables: TVariables) => unknown;
-  invalidateQueries?: QueryKey[];
+  invalidateQueries?: QueryKey[] | ((variables: TVariables) => QueryKey[]);
 };
 
 export function useApiMutation<TData, TVariables = void>({
@@ -36,8 +36,11 @@ export function useApiMutation<TData, TVariables = void>({
       body: body ? body(variables) : variables,
     }),
     onSuccess: async (data, variables, onMutateResult, context) => {
+      const queryKeys = typeof invalidateQueries === "function"
+        ? invalidateQueries(variables)
+        : invalidateQueries;
       await Promise.all(
-        invalidateQueries.map((queryKey) =>
+        queryKeys.map((queryKey) =>
           client.invalidateQueries({ queryKey }),
         ),
       );
