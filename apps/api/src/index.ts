@@ -20,7 +20,14 @@ if (missingClerkConfiguration.length > 0) {
   );
 }
 
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://salary-management-system-7s3w.vercel.app",
+    ],
+  }),
+);
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/health", (_req, res) => {
